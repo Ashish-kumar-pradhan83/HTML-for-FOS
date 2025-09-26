@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Food Ordering System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #fff8e1;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        color: #e65100;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: #fefefe;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .table-select {
+        margin: 15px 0;
+        text-align: center;
+      }
+      select {
+        padding: 8px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background: #ffe0b2;
+      }
+      .menu-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 10px 0;
+        padding: 8px;
+        background: #fff3cd;
+        border-radius: 6px;
+      }
+      .menu-item label {
+        font-size: 16px;
+      }
+      input[type="number"] {
+        width: 60px;
+        padding: 5px;
+        font-size: 14px;
+      }
+      .buttons {
+        text-align: center;
+        margin-top: 20px;
+      }
+      .btn {
+        background: #ef6c00;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 5px;
+        font-size: 14px;
+      }
+      .btn:hover {
+        background: #d84315;
+      }
+      .link-btn {
+        background: #6d4c41;
+      }
+      .orders {
+        max-width: 600px;
+        margin: 20px auto;
+        background: #f1e9d2;
+        padding: 15px;
+        border-radius: 10px;
+        display: none;
+      }
+      .order {
+        margin: 10px 0;
+        padding: 10px;
+        background: #fff;
+        border-radius: 5px;
+      }
+      .message {
+        text-align: center;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Welcome to Food Ordering System</h1>
+    <div class="container">
+      <div class="table-select">
+        <label for="table">Select Table Number:</label>
+        <select id="table">
+          <option value="Select">Select</option>
+          <option value="1">Table 1</option>
+          <option value="2">Table 2</option>
+          <option value="3">Table 3</option>
+          <option value="4">Table 4</option>
+          <option value="5">Table 5</option>
+          <option value="6">Table 6</option>
+          <option value="7">Table 7</option>
+          <option value="8">Table 8</option>
+          <option value="9">Table 9</option>
+          <option value="10">Table 10</option>
+        </select>
+      </div>
+
+      <div id="menu"></div>
+
+      <div class="buttons">
+        <button class="btn" onclick="placeOrder()">Place Order</button>
+        <button class="btn link-btn" onclick="viewOrders()">View Orders</button>
+      </div>
+
+      <div class="message" id="message"></div>
+    </div>
+
+    <div class="orders" id="ordersBox">
+      <h2>All Orders</h2>
+      <div id="ordersList"></div>
+    </div>
+
+    <script>
+      const MENU_ITEMS = [
+        ["Burger", 120],
+        ["Pizza", 250],
+        ["Pasta", 180],
+        ["Fries", 90],
+        ["Salad", 110],
+        ["Soda", 40],
+        ["Coffee", 70],
+      ];
+
+      let orders = [];
+
+      const menuDiv = document.getElementById("menu");
+
+      MENU_ITEMS.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "menu-item";
+        div.innerHTML = `
+        <label>${item[0]} - ₹${item[1]}</label>
+        <input type="number" id="item_${index}" min="0" max="10" value="0">
+      `;
+        menuDiv.appendChild(div);
+      });
+
+      function placeOrder() {
+        let selectedItems = [];
+        let totalPrice = 0;
+        let tableNo = document.getElementById("table").value;
+        const messageDiv = document.getElementById("message");
+
+        if (tableNo === "Select") {
+          messageDiv.textContent = "⚠ Please select a table number!";
+          messageDiv.style.color = "red";
+          return;
+        }
+
+        MENU_ITEMS.forEach((item, index) => {
+          const qty =
+            parseInt(document.getElementById(`item_${index}`).value) || 0;
+          if (qty > 0) {
+            for (let i = 0; i < qty; i++) {
+              selectedItems.push(item[0]);
+            }
+            totalPrice += item[1] * qty;
+          }
+        });
+
+        if (selectedItems.length === 0) {
+          messageDiv.textContent = "⚠ Please select at least one item!";
+          messageDiv.style.color = "red";
+          return;
+        }
+
+        orders.push([tableNo, selectedItems, totalPrice]);
+        messageDiv.textContent = `✅ Order Placed! Table: ${tableNo} | Items: ${selectedItems.join(", ")} | Total: ₹${totalPrice.toFixed(2)}`;
+        messageDiv.style.color = "green";
+
+        document
+          .querySelectorAll("input[type=number]")
+          .forEach((input) => (input.value = 0));
+      }
+
+      function viewOrders() {
+        const ordersBox = document.getElementById("ordersBox");
+        const ordersList = document.getElementById("ordersList");
+        ordersList.innerHTML = "";
+
+        if (orders.length === 0) {
+          ordersList.innerHTML = "<p>No orders placed yet.</p>";
+        } else {
+          orders.forEach((order, idx) => {
+            const div = document.createElement("div");
+            div.className = "order";
+            div.innerHTML = `<b>Order ${idx + 1} (Table ${order[0]}):</b> ${order[1].join(", ")} <br> <b>Total:</b> ₹${order[2].toFixed(2)}`;
+            ordersList.appendChild(div);
+          });
+        }
+
+        ordersBox.style.display = "block";
+      }
+    </script>
+  </body>
+</html>
